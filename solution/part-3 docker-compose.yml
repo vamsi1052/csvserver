@@ -1,0 +1,39 @@
+version: '3'
+services:
+  csvserver:
+    image: infracloudio/csvserver:latest
+    ports:
+      - "9393:9300"
+    env_file:
+      - csvserver.env
+    volumes:
+      - ./inputFile:/csvserver/inputdata
+
+  prometheus:
+    image: prom/prometheus:v2.45.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+-------------
+prometheus.yml
+global:
+  scrape_interval: 15s # How often to scrape targets by default.
+
+scrape_configs:
+  - job_name: 'csvserver'
+    static_configs:
+      - targets: ['csvserver:9300']
+        labels:
+          group: 'csvserver'
+
+----
+docker-compose up -d                                
+[+] Running 2/0
+ ✔ Container jkrishna-prometheus-1  Running                                                                                                                                                            0.0s 
+ ✔ Container jkrishna-csvserver-1   Running     
+----
+output
+csvserver_records{csv_identifier="Y3N2c2VydmVyIGdlbmVyYXRlZCBhdDogMTcxODc5NjAxMg==", group="csvserver", instance="csvserver:9300", job="csvserver"}
+7
